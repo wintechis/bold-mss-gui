@@ -55,7 +55,8 @@ class App extends Component {
       console.log(data)
       if(data.type === 'forklift') {
         let m = this.state.forklifts
-        m.set(data.id, data)
+        let fl = Object.assign(m.get(data.id) || {}, data)
+        m.set(data.id, fl)
         this.setState({
           forklifts: m
         })
