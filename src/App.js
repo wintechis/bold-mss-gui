@@ -6,14 +6,36 @@ const baseURI = 'https://localhost:8443/arena2036/'
 class Grid extends React.Component {
   render() {
     let lines = []
-    for(let i = 0; i <= 1000; i += 50) {
-      lines.push(<Line key={i + 1} points={[i,0,i,1000]} stroke="black" strokeWidth={0.5} />)
-      lines.push(<Line key={-i - 1} points={[0,i,1000,i]} stroke="black" strokeWidth={0.5} />)
+    for(let i = 0; i <= this.props.width * 50; i += 50) {
+        lines.push(<Line key={i + 1} points={[i,0,i,this.props.height * 50]} stroke="black" strokeWidth={0.5} />)
+    }
+    for(let j = 0; j <= this.props.height * 50; j += 50) {
+      lines.push(<Line key={-j - 1} points={[0,j,this.props.width * 50,j]} stroke="black" strokeWidth={0.5} />)
     }
     return (
       <Layer>
         {lines}
       </Layer>
+    )
+  }
+}
+
+class Product extends React.Component {
+  render() {
+    let uri = baseURI + 'products/' + this.props.type + '/' + this.props.entity + '/#product'
+    return (
+      <Group>
+        <Circle
+          x={this.props.x * 50 + 25}
+          y={this.props.y * 50 + 25}
+          radius={18}
+          fill='orange'
+          stroke='black'
+          onMouseEnter={() => this.props.setHoverUri(uri)}
+          onMouseLeave={() => this.props.setHoverUri('')}
+          onMouseUp={() => window.open(uri, '_blank')}
+        />
+      </Group>
     )
   }
 }
@@ -74,9 +96,10 @@ class App extends Component {
   constructor() {
     super()
     this.state = {
-      hover: 'https://test.org/asdasd',
+      hover: '',
       forklifts: new Map(),
-      stations: new Map()
+      stations: new Map(),
+      products: new Map()
     }
     this.setHoverUri = this.setHoverUri.bind(this);
   }
@@ -95,10 +118,21 @@ class App extends Component {
         })
       } else if(data.type === 'station') {
         let m = this.state.stations
-        let s = Object.assign(m.get(data.id) || {}, data)
-        m.set(data.id, s)
+        let type = m.get(data.stationType) || new Map()
+        let s = Object.assign(type.get(data.id) || {}, data)
+        type.set(data.id, s)
+        m.set(data.productType, type)
         this.setState({
           stations: m
+        })
+      } else if(data.type === 'product') {
+        let m = this.state.products
+        let type = m.get(data.productType) || new Map()
+        let s = Object.assign(type.get(data.id) || {}, data)
+        type.set(data.id, s)
+        m.set(data.productType, type)
+        this.setState({
+          products: m
         })
       }
       this.forceUpdate()
@@ -119,14 +153,24 @@ class App extends Component {
       y={fl.y}
       setHoverUri={this.setHoverUri}
     />)
-    let stations = Array.from(this.state.stations).map(([_,s]) => <Station
-      key={s.id}
+    let stations = Array.from(this.state.stations).map(([_,sa]) => Array.from(sa).map(([_,s]) => s)).flat().map((s, idx) => <Station
+      key={idx}
       entity={s.id}
       type={s.stationType}
       x={s.x}
       y={s.y}
       width={s.width}
       height={s.height}
+      setHoverUri={this.setHoverUri}
+    />)
+    let products = Array.from(this.state.products).map(([_,pa]) => Array.from(pa).map(([_,p]) => p)).flat().map((p, idx) => <Product
+      key={idx}
+      entity={p.id}
+      type={p.productType}
+      x={p.x}
+      y={p.y}
+      width={p.width}
+      height={p.height}
       setHoverUri={this.setHoverUri}
     />)
     return (
@@ -138,13 +182,16 @@ class App extends Component {
             alignItems: "center"
           }}
         >
-          <Stage width={1002} height={1002} offsetX={-1} offsetY={-1} style={{margin: '50px'}}>
-            <Grid />
+          <Stage width={1002} height={752} offsetX={-1} offsetY={-1} style={{margin: '50px'}}>
+            <Grid width={20} height={15} />
             <Layer>
               {stations}
             </Layer>
             <Layer>
               {forklifts}
+            </Layer>
+            <Layer>
+              {products}
             </Layer>
           </Stage>
         </div>
