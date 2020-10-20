@@ -106,6 +106,8 @@ class App extends Component {
 
   componentDidMount() {
     var ws = new WebSocket('ws://localhost:8080/');
+    ws.onclose = () => window.location.reload()
+    ws.onerror = () => window.location.reload()
     ws.onmessage = (event) => {
       let data = JSON.parse(event.data)
       console.log(data)
