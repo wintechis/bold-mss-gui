@@ -237,7 +237,7 @@ class SmartphoneConfigurator extends Component {
           </select>
         </p>
         <p>
-          <label htmlFor="communications">Communication Units:</label>
+          <label htmlFor="communications">Com. Units:</label>
           <select id="communications" value={this.state.communication} onChange={this.handleCommunication} multiple={true}>
             {communications}
           </select>
@@ -289,65 +289,68 @@ class Order extends React.Component {
         style={{
           border: '2pt solid',
           padding: '10pt',
-          fontSize: 'smaller'
+          fontSize: 'smaller',
+          marginTop: '25px'
         }}
       >
         <h2 style={{margin: '5pt', paddingLeft: '1pt'}}>Order {this.props.entity}</h2>
         <table style={{margin: '5pt', width: '100%'}}>
-          <tr>
-            <th style={{textAlign: 'left'}}>RAM:</th>
-            <td>
-              {this.props.requirements.ram} GB
-            </td>
-          </tr>
-          <tr>
-            <th style={{textAlign: 'left'}}>CPU:</th>
-            <td>
-              {this.props.requirements.cpu.split('#')[1]}
-            </td>
-          </tr>
-          <tr>
-            <th style={{textAlign: 'left'}}>Memory:</th>
-            <td>
-              {this.props.requirements.memory} GB
-            </td>
-          </tr>
-          <tr>
-            <th style={{textAlign: 'left'}}>Ports:</th>
-            <td>
-              {this.props.requirements.ports.map(p => p.split('#')[1]).join(', ')}
-            </td>
-          </tr>
-          <tr>
-            <th style={{textAlign: 'left'}}>Case:</th>
-            <td>
-              {this.props.requirements.case.split('#')[1]}
-            </td>
-          </tr>
-          <tr>
-            <th style={{textAlign: 'left'}}>Communication Units:</th>
-            <td>
-              {this.props.requirements.communication.map(c => c.split('#')[1]).join(', ')}
-            </td>
-          </tr>
-          <tr>
-            <th style={{textAlign: 'left'}}>Sensor Units:</th>
-            <td>
-              {this.props.requirements.sensor.map(s => s.split('#')[1]).join(', ')}
-            </td>
-          </tr>
-          <tr>
-            <th style={{textAlign: 'left'}}>Battery:</th>
-            <td>
-              {this.props.requirements.battery} mAh
-            </td>
-          </tr>
-          <tr>
-            <th style={{textAlign: 'left'}}>Display Size:</th>
-            <td>
-              {this.props.requirements.display}''
-            </td>
-          </tr>
+          <tbody>
+            <tr>
+              <th style={{textAlign: 'left'}}>RAM:</th>
+              <td style={{textAlign: 'left'}}>
+                {this.props.requirements.ram} GB
+              </td>
+            </tr>
+            <tr>
+              <th style={{textAlign: 'left'}}>CPU:</th>
+              <td>
+                {this.props.requirements.cpu.split('#')[1]}
+              </td>
+            </tr>
+            <tr>
+              <th style={{textAlign: 'left'}}>Memory:</th>
+              <td style={{textAlign: 'left'}}>
+                {this.props.requirements.memory} GB
+              </td>
+            </tr>
+            <tr>
+              <th style={{textAlign: 'left'}}>Ports:</th>
+              <td style={{textAlign: 'left'}}>
+                {this.props.requirements.ports.map(p => p.split('#')[1]).join(', ')}
+              </td>
+            </tr>
+            <tr>
+              <th style={{textAlign: 'left'}}>Case:</th>
+              <td style={{textAlign: 'left'}}>
+                {this.props.requirements.case.split('#')[1]}
+              </td>
+            </tr>
+            <tr>
+              <th style={{textAlign: 'left'}}>Com. Units:</th>
+              <td style={{textAlign: 'left'}}>
+                {this.props.requirements.communication.map(c => c.split('#')[1]).join(', ')}
+              </td>
+            </tr>
+            <tr>
+              <th style={{textAlign: 'left'}}>Sensor Units:</th>
+              <td style={{textAlign: 'left'}}>
+                {this.props.requirements.sensor.map(s => s.split('#')[1]).join(', ')}
+              </td>
+            </tr>
+            <tr>
+              <th style={{textAlign: 'left'}}>Battery:</th>
+              <td style={{textAlign: 'left'}}>
+                {this.props.requirements.battery} mAh
+              </td>
+            </tr>
+            <tr>
+              <th style={{textAlign: 'left'}}>Display Size:</th>
+              <td style={{textAlign: 'left'}}>
+                {this.props.requirements.display}''
+              </td>
+            </tr>
+          </tbody>
         </table>
       </div>
     )
