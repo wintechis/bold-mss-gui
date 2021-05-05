@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
-import { Group, Stage, Layer, Rect, Line, Circle } from 'react-konva';
+import { Group, Stage, Layer, Rect, Line, Circle, Text } from 'react-konva';
+import { Bindings } from '@comunica/bus-query-operation';
+import { DataFactory } from 'rdf-data-factory';
+const newEngine = require('@comunica/actor-init-sparql').newEngine;
+const myEngine = newEngine();
+const factory = new DataFactory();
 
 const baseURI = 'https://localhost:8443/arena2036/'
 
 class Grid extends React.Component {
   render() {
     let lines = []
-    for(let i = 0; i <= this.props.width * 50; i += 50) {
-        lines.push(<Line key={i + 1} points={[i,0,i,this.props.height * 50]} stroke="black" strokeWidth={0.5} />)
+    for(let i = 0; i <= this.props.width * 30; i += 30) {
+        lines.push(<Line key={i + 1} points={[i,0,i,this.props.height * 30]} stroke="black" strokeWidth={0.5} />)
     }
-    for(let j = 0; j <= this.props.height * 50; j += 50) {
-      lines.push(<Line key={-j - 1} points={[0,j,this.props.width * 50,j]} stroke="black" strokeWidth={0.5} />)
+    for(let j = 0; j <= this.props.height * 30; j += 30) {
+      lines.push(<Line key={-j - 1} points={[0,j,this.props.width * 30,j]} stroke="black" strokeWidth={0.5} />)
     }
     return (
       <Layer>
@@ -20,20 +25,36 @@ class Grid extends React.Component {
   }
 }
 
-class Product extends React.Component {
+class ProductStack extends React.Component {
   render() {
-    let uri = baseURI + 'products/' + this.props.type + '/' + this.props.entity + '/#product'
     return (
       <Group>
         <Circle
-          x={this.props.x * 50 + 25}
-          y={this.props.y * 50 + 25}
-          radius={18}
+          x={this.props.x * 30 + 15}
+          y={this.props.y * 30 + 15}
+          radius={10}
           fill='orange'
           stroke='black'
-          onMouseEnter={() => this.props.setHoverUri(uri)}
-          onMouseLeave={() => this.props.setHoverUri('')}
-          onMouseUp={() => window.open(uri, '_blank')}
+          strokeWidth={1.5}
+        />
+        <Text x={this.props.x * 30 + 11} y={this.props.y * 30 + 10} fontSize={14} align="center" text={this.props.ps.length} />
+      </Group>
+    )
+  }
+}
+
+class Port extends React.Component {
+  render() {
+    let color = this.props.input === 'true' ? 'green' : 'red';
+    return (
+      <Group>
+        <Rect
+          x={this.props.x * 30}
+          y={this.props.y * 30}
+          width={30}
+          height={30}
+          fill={color}
+          opacity={0.5}
         />
       </Group>
     )
@@ -42,238 +63,44 @@ class Product extends React.Component {
 
 class Station extends React.Component {
   render() {
-    let uri = baseURI + 'stations/' + this.props.type + '/' + this.props.entity + '/#station'
     return (
       <Group>
         <Rect
-          x={this.props.x * 50}
-          y={this.props.y * 50}
-          width={this.props.width * 50}
-          height={this.props.height * 50}
-          fill='darkgreen'
+          x={this.props.x1 * 30}
+          y={this.props.y1 * 30}
+          width={(this.props.x2 - this.props.x1 + 1) * 30}
+          height={(this.props.y2 - this.props.y1 + 1) * 30}
+          fill='blue'
           stroke='black'
-          onMouseEnter={() => this.props.setHoverUri(uri)}
-          onMouseLeave={() => this.props.setHoverUri('')}
-          onMouseUp={() => window.open(uri, '_blank')}
+          strokeWidth={1.5}
         />
       </Group>
     )
   }
 }
 
-class Forklift extends React.Component {
+class Transporter extends React.Component {
   render() {
-    let uri = baseURI + 'forklifts/' + this.props.entity + '/#fl'
     return (
       <Group>
         <Rect
-          x={this.props.x * 50}
-          y={this.props.y * 50}
-          width={50}
-          height={50}
+          x={this.props.x * 30}
+          y={this.props.y * 30}
+          width={30}
+          height={30}
           fill='#bbbbbb'
           stroke='black'
-          onMouseEnter={() => this.props.setHoverUri(uri)}
-          onMouseLeave={() => this.props.setHoverUri('')}
-          onMouseUp={() => window.open(uri, '_blank')}
+          strokeWidth={1.5}
         />
         <Circle
-          x={this.props.x * 50 + 25}
-          y={this.props.y * 50 + 25}
-          radius={18}
+          x={this.props.x * 30 + 15}
+          y={this.props.y * 30 + 15}
+          radius={10}
           fill='#e4e4e4'
           stroke='black'
-          onMouseEnter={() => this.props.setHoverUri(uri)}
-          onMouseLeave={() => this.props.setHoverUri('')}
-          onMouseUp={() => window.open(uri, '_blank')}
+          strokeWidth={1.5}
         />
       </Group>
-    )
-  }
-}
-
-class SmartphoneConfigurator extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      cpu: this.props.partList.cpu[0],
-      ram: 1,
-      memory: 16,
-      port: [],
-      case: this.props.partList.case[0],
-      communication: [],
-      sensor: [],
-      battery: 2000,
-      display: 4
-    }
-    this.handleRam = this.handleRam.bind(this)
-    this.handleCpu = this.handleCpu.bind(this)
-    this.handleMemory = this.handleMemory.bind(this)
-    this.handlePort = this.handlePort.bind(this)
-    this.handleCase = this.handleCase.bind(this)
-    this.handleCommunication = this.handleCommunication.bind(this)
-    this.handleSensor = this.handleSensor.bind(this)
-    this.handleBattery = this.handleBattery.bind(this)
-    this.handleDisplay = this.handleDisplay.bind(this)
-    this.order = this.order.bind(this)
-  }
-
-  handleRam(event) {
-    this.setState({
-      ram: parseInt(event.target.value)
-    })
-  }
-
-  handleCpu(event) {
-    this.setState({
-      cpu: event.target.value
-    })
-  }
-
-  handleMemory(event) {
-    this.setState({
-      memory: parseInt(event.target.value)
-    })
-  }
-
-  handlePort(event) {
-    this.setState({
-      port: Array.from(event.target.selectedOptions, option => option.value)
-    })
-  }
-
-  handleCase(event) {
-    this.setState({
-      case: event.target.value
-    })
-  }
-
-  handleCommunication(event) {
-    this.setState({
-      communication: Array.from(event.target.selectedOptions, option => option.value)
-    })
-  }
-
-  handleSensor(event) {
-    this.setState({
-      sensor: Array.from(event.target.selectedOptions, option => option.value)
-    })
-  }
-
-  handleBattery(event) {
-    this.setState({
-      battery: parseInt(event.target.value)
-    })
-  }
-
-  handleDisplay(event) {
-    this.setState({
-      display: parseFloat(event.target.value)
-    })
-  }
-
-  order() {
-    this.props.sendOrder({order: this.state})
-    this.setState({
-      cpu: this.props.partList.cpu[0],
-      ram: 1,
-      memory: 16,
-      port: [],
-      case: this.props.partList.case[0],
-      communication: [],
-      sensor: [],
-      battery: 2000,
-      display: 4
-    })
-  }
-
-  render() {
-  let cpus = this.props.partList.cpu.map(cpu => <option key={cpu} label={cpu.split('#')[1]}>{cpu}</option>)
-  let ports = this.props.partList.port.map(port => <option key={port} label={port.split('#')[1]}>{port}</option>)
-  let cases = this.props.partList.case.map(c => <option key={c} label={c.split('#')[1]}>{c}</option>)
-  let communications = this.props.partList.communication.map(comm => <option key={comm} label={comm.split('#')[1]}>{comm}</option>)
-  let sensors = this.props.partList.sensor.map(sensor => <option key={sensor} label={sensor.split('#')[1]}>{sensor}</option>)
-    return (
-      <div>
-        <h3>New Smartphone Order:</h3>
-        <p>
-          <label htmlFor="ram">RAM:</label>
-          <select id="ram" value={this.state.ram} onChange={this.handleRam}>
-            <option label="1 GB">1</option>
-            <option label="2 GB">2</option>
-            <option label="3 GB">3</option>
-            <option label="4 GB">4</option>
-            <option label="5 GB">5</option>
-            <option label="6 GB">6</option>
-            <option label="7 GB">7</option>
-            <option label="8 GB">8</option>
-          </select>
-        </p>
-        <p>
-          <label htmlFor="cpu">CPUs:</label>
-          <select id="cpu" value={this.state.cpu} onChange={this.handleCpu}>
-            {cpus}
-          </select>
-        </p>
-        <p>
-          <label htmlFor="memory">Memory:</label>
-          <select id="memory" value={this.state.memory} onChange={this.handleMemory}>
-            <option label="16 GB">16</option>
-            <option label="32 GB">32</option>
-            <option label="64 GB">64</option>
-            <option label="128 GB">128</option>
-          </select>
-        </p>
-        <p>
-          <label htmlFor="ports">Ports:</label>
-          <select id="ports" value={this.state.port} onChange={this.handlePort} multiple={true}>
-            {ports}
-          </select>
-        </p>
-        <p>
-          <label htmlFor="case">Case:</label>
-          <select id="case" value={this.state.case} onChange={this.handleCase}>
-            {cases}
-          </select>
-        </p>
-        <p>
-          <label htmlFor="communications">Com. Units:</label>
-          <select id="communications" value={this.state.communication} onChange={this.handleCommunication} multiple={true}>
-            {communications}
-          </select>
-        </p>
-        <p>
-          <label htmlFor="sensors">Sensor Units:</label>
-          <select id="sensors" value={this.state.sensor} onChange={this.handleSensor} multiple={true}>
-            {sensors}
-          </select>
-        </p>
-        <p>
-          <label htmlFor="battery">Battery:</label>
-          <select id="battery" value={this.state.battery} onChange={this.handleBattery}>
-            <option label="2000 mAh">2000</option>
-            <option label="2500 mAh">2500</option>
-            <option label="3000 mAh">3000</option>
-            <option label="3500 mAh">3500</option>
-            <option label="4000 mAh">4000</option>
-            <option label="4500 mAh">4500</option>
-          </select>
-        </p>
-        <p>
-          <label htmlFor="display">Display Size:</label>
-          <select id="display" value={this.state.display} onChange={this.handleDisplay}>
-            <option label="4''">4</option>
-            <option label="4.5''">4.5</option>
-            <option label="5''">5</option>
-            <option label="5.5''">5.5</option>
-            <option label="6''">6</option>
-            <option label="6.5''">6.5</option>
-          </select>
-        </p>
-        <p>
-          <button onClick={this.order}>Order</button>
-        </p>
-      </div>
     )
   }
 }
@@ -357,173 +184,481 @@ class Order extends React.Component {
   }
 }
 
-class App extends Component {
-  ws = new WebSocket('ws://localhost:8080/')
-
-  constructor() {
-    super()
+class Products extends Component {
+  constructor(props) {
+    super(props)
     this.state = {
-      hover: '',
-      partList: {
-        cpu: [
-          'https://localhost:8443/arena2036/products/cpu/#dualcore',
-          'https://localhost:8443/arena2036/products/cpu/#quadcore',
-          'https://localhost:8443/arena2036/products/cpu/#octocore',
-        ],
-        port: [
-          'https://localhost:8443/arena2036/products/port/#audioJack',
-          'https://localhost:8443/arena2036/products/port/#dolbySpeaker'
-        ],
-        case: [
-          'https://localhost:8443/arena2036/products/case/#metal',
-          'https://localhost:8443/arena2036/products/case/#plastic'
-        ],
-        communication: [
-          'https://localhost:8443/arena2036/products/communication-unit/#bluetooth',
-          'https://localhost:8443/arena2036/products/communication-unit/#gps'
-        ],
-        sensor: [
-          'https://localhost:8443/arena2036/products/sensor-unit/#camera',
-          'https://localhost:8443/arena2036/products/sensor-unit/#compass'
-        ]
-      },
-      forklifts: new Map(),
-      stations: new Map(),
-      products: new Map(),
-      orders: new Map()
+      products: []
     }
-    this.setHoverUri = this.setHoverUri.bind(this);
-    this.step = this.step.bind(this);
-    this.sendOrder = this.sendOrder.bind(this);
+    this.updateProducts = this.updateProducts.bind(this);
   }
 
   componentDidMount() {
-    this.ws.onclose = () => window.location.reload()
-    this.ws.onerror = () => window.location.reload()
-    this.ws.onmessage = (event) => {
-      let data = JSON.parse(event.data)
-      console.log(data)
-      if(data.type === 'forklift') {
-        let m = this.state.forklifts
-        let fl = Object.assign(m.get(data.id) || {}, data)
-        m.set(data.id, fl)
-        this.setState({
-          forklifts: m
-        })
-      } else if(data.type === 'station') {
-        let m = this.state.stations
-        let type = m.get(data.stationType) || new Map()
-        let s = Object.assign(type.get(data.id) || {}, data)
-        type.set(data.id, s)
-        m.set(data.productType, type)
-        this.setState({
-          stations: m
-        })
-      } else if(data.type === 'product') {
-        let m = this.state.products
-        let type = m.get(data.productType) || new Map()
-        let s = Object.assign(type.get(data.id) || {}, data)
-        type.set(data.id, s)
-        m.set(data.productType, type)
-        this.setState({
-          products: m
-        })
-      } else if(data.type === 'order') {
-        let m = this.state.orders
-        let o = Object.assign(m.get(data.id) || {}, data)
-        m.set(data.id, o)
-        this.setState({
-          orders: m
-        })
-      }
-      this.forceUpdate()
+    this.updateProducts();
+  }
+
+  componentDidUpdate(oldProps) {
+    if(oldProps.step !== this.props.step) {
+      this.updateProducts();
     }
   }
 
-  sendOrder(order) {
-    this.ws.send(JSON.stringify(order))
-  }
+  updateProducts() {
+    // Get products to App state via Comunica
+    myEngine.query(`
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX arena: <http://arena2036.example.org/>
+      PREFIX sim: <http://ti.rw.fau.de/sim#>
 
-  setHoverUri(uri) {
-    this.setState({
-      hover: uri
-    })
-  }
-
-  step() {
-    this.ws.send(JSON.stringify({step: 1}))
+      SELECT *
+      WHERE {
+        GRAPH ?product {
+          ?product a arena:Product ;
+            arena:kind ?kind ;
+            arena:locationX ?locationX ;
+            arena:locationY ?locationY .
+        }
+      } 
+      `, {
+      sources: [`http://localhost:8000/modularSmartphone-${this.props.step}.trig`],
+    }).then((result) => {
+      let products = []
+      result.bindingsStream.on('data', (binding) => {
+        products.push({
+          'id': binding.get('?product').value,
+          'kind': binding.get('?kind').value,
+          'x': binding.get('?locationX').value,
+          'y': binding.get('?locationY').value,
+        })
+      });
+      result.bindingsStream.on('end', () => this.setState({'products': products}));
+    }).catch(console.error);
   }
 
   render() {
-    let forklifts = Array.from(this.state.forklifts).map(([_,fl]) => <Forklift
-      key={fl.id}
-      entity={fl.id}
-      x={fl.x}
-      y={fl.y}
-      setHoverUri={this.setHoverUri}
-    />)
-    let stations = Array.from(this.state.stations).map(([_,sa]) => Array.from(sa).map(([_,s]) => s)).flat().map((s, idx) => <Station
-      key={idx}
-      entity={s.id}
-      type={s.stationType}
-      x={s.x}
-      y={s.y}
-      width={s.width}
-      height={s.height}
-      setHoverUri={this.setHoverUri}
-    />)
-    let products = Array.from(this.state.products).map(([_,pa]) => Array.from(pa).map(([_,p]) => p)).flat().map((p, idx) => <Product
-      key={idx}
-      entity={p.id}
-      type={p.productType}
-      x={p.x}
-      y={p.y}
-      width={p.width}
-      height={p.height}
-      setHoverUri={this.setHoverUri}
-    />)
-    let orders = Array.from(this.state.orders).map(([_,o]) => <Order
-      key={o.id}
-      entity={o.id}
-      requirements={o}
-      setHoverUri={this.setHoverUri}
-    />)
+    let prod = [...this.state.products];
+    let stacks = [];
+    let i = 0;
+    while(prod.length > 0) {
+      let p = prod.pop();
+      let ps = [...prod.filter(pro => pro.x === p.x && pro.y === p.y), p];
+      stacks.push(<ProductStack key={i} x={p.x} y={p.y} ps={ps}/>)
+      prod = prod.filter(pro => !(pro.x === p.x && pro.y === p.y))
+      i++;
+    }
+    return (
+      <>
+        {stacks}
+      </>
+    )
+  }
+}
+
+class Ports extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      ports: []
+    }
+    this.updatePorts = this.updatePorts.bind(this);
+  }
+
+  componentDidMount() {
+    this.updatePorts();
+  }
+
+  componentDidUpdate(oldProps) {
+    if(oldProps.step !== this.props.step) {
+      this.updatePorts();
+    }
+  }
+
+  updatePorts() {
+    // Get ports to App state via Comunica
+    myEngine.query(`
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX arena: <http://arena2036.example.org/>
+      PREFIX sim: <http://ti.rw.fau.de/sim#>
+
+      SELECT *
+      WHERE {
+        GRAPH ?station {
+          {
+            ?station arena:inputPort ?port .
+
+            BIND (TRUE AS ?input)
+          } UNION {
+            ?station arena:outputPort ?port .
+
+            BIND (FALSE AS ?input)
+          }
+
+          ?port a arena:Port ;
+            arena:locationX ?locationX ;
+            arena:locationY ?locationY .
+        }
+      } 
+      `, {
+      sources: [`http://localhost:8000/modularSmartphone-${this.props.step}.trig`],
+    }).then((result) => {
+      let ports = []
+      result.bindingsStream.on('data', (binding) => {
+        ports.push({
+          'id': binding.get('?port').value,
+          'x': binding.get('?locationX').value,
+          'y': binding.get('?locationY').value,
+          'input': binding.get('?input').value,
+        })
+      });
+      result.bindingsStream.on('end', () => this.setState({'ports': ports}));
+    }).catch(console.error);
+  }
+
+  render() {
+    let ports = this.state.ports.map((t) => <Port key={t.id} id={t.id} input={t.input} x={t.x} y={t.y} />)
+    return (
+      <>
+        {ports}
+      </>
+    )
+  }
+}
+
+class Stations extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      stations: []
+    }
+    this.updateStations = this.updateStations.bind(this);
+  }
+
+  componentDidMount() {
+    this.updateStations();
+  }
+
+  componentDidUpdate(oldProps) {
+    if(oldProps.step !== this.props.step) {
+      this.updateStations();
+    }
+  }
+
+  updateStations() {
+    // Get stations to App state via Comunica
+    myEngine.query(`
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX arena: <http://arena2036.example.org/>
+      PREFIX sim: <http://ti.rw.fau.de/sim#>
+
+      SELECT *
+      WHERE {
+        GRAPH ?station {
+          ?station a arena:Workstation ;
+            arena:locationX1 ?locationX1 ;
+            arena:locationY1 ?locationY1 ;
+            arena:locationX2 ?locationX2 ;
+            arena:locationY2 ?locationY2 .
+        }
+      } 
+      `, {
+      sources: [`http://localhost:8000/modularSmartphone-${this.props.step}.trig`],
+    }).then((result) => {
+      let stations = []
+      result.bindingsStream.on('data', (binding) => {
+        stations.push({
+          'id': binding.get('?station').value,
+          'x1': binding.get('?locationX1').value,
+          'y1': binding.get('?locationY1').value,
+          'x2': binding.get('?locationX2').value,
+          'y2': binding.get('?locationY2').value,
+        })
+      });
+      result.bindingsStream.on('end', () => this.setState({'stations': stations}));
+    }).catch(console.error);
+  }
+
+  render() {
+    let stations = this.state.stations.map((t) => <Station key={t.id} id={t.id} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}/>)
+    return (
+      <>
+        {stations}
+      </>
+    )
+  }
+}
+
+class Transporters extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      transporters: []
+    }
+    this.updateTransporters = this.updateTransporters.bind(this);
+  }
+
+  componentDidMount() {
+    this.updateTransporters();
+  }
+
+  componentDidUpdate(oldProps) {
+    if(oldProps.step !== this.props.step) {
+      this.updateTransporters();
+    }
+  }
+
+  updateTransporters() {
+    // Get transporters to App state via Comunica
+    myEngine.query(`
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX arena: <http://arena2036.example.org/>
+      PREFIX sim: <http://ti.rw.fau.de/sim#>
+
+      SELECT *
+      WHERE {
+        GRAPH ?transporter {
+          ?transporter a arena:Transporter ;
+            arena:locationX ?locationX ;
+            arena:locationY ?locationY .
+        }
+      } 
+      `, {
+      sources: [`http://localhost:8000/modularSmartphone-${this.props.step}.trig`],
+    }).then((result) => {
+      let transporters = []
+      result.bindingsStream.on('data', (binding) => {
+        transporters.push({
+          'id': binding.get('?transporter').value,
+          'x': binding.get('?locationX').value,
+          'y': binding.get('?locationY').value,
+        })
+      });
+      result.bindingsStream.on('end', () => this.setState({'transporters': transporters}));
+    }).catch(console.error);
+  }
+
+  render() {
+    let transporters = this.state.transporters.map((t) => <Transporter key={t.id} id={t.id} x={t.x} y={t.y}/>)
+    return (
+      <>
+        {transporters}
+      </>
+    )
+  }
+}
+
+class SelectedItems extends Component {
+  render() {
+    let items = this.props.selectedItems.map(i => <li key={i}><a href={i}>{i}</a></li>);
+    return (
+      <div>
+        <ul>
+          {items}
+        </ul>
+      </div>
+    )
+  }
+}
+
+class Selection extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      ids: []
+    }
+    this.updateSelection = this.updateSelection.bind(this);
+  }
+
+  componentDidMount() {
+    this.updateSelection();
+  }
+
+  componentDidUpdate(oldProps) {
+    if(oldProps.step !== this.props.step || oldProps.x !== this.props.x || oldProps.y !== this.props.y) {
+      this.updateSelection();
+    }
+  }
+
+  updateSelection() {
+    // Get everything that is in the selected location
+    myEngine.query(`
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX arena: <http://arena2036.example.org/>
+      PREFIX sim: <http://ti.rw.fau.de/sim#>
+
+      SELECT *
+      WHERE {
+        GRAPH ?g {
+          {
+            ?thing arena:locationX ?locationX ;
+              arena:locationY ?locationY .
+          } UNION {
+            ?thing arena:locationX1 ?locationX1 ;
+              arena:locationY1 ?locationY1 ;
+              arena:locationX2 ?locationX2 ;
+              arena:locationY2 ?locationY2 .
+              
+              FILTER(?locationX1 <= ?locationX && ?locationY1 <= ?locationY && ?locationX2 >= ?locationX && ?locationY2 >= ?locationY)
+          }
+        }
+      } 
+      `, {
+      sources: [`http://localhost:8000/modularSmartphone-${this.props.step}.trig`],
+      initialBindings: new Bindings({
+        '?locationX': factory.literal(this.props.x, factory.namedNode('http://www.w3.org/2001/XMLSchema#integer')),
+        '?locationY': factory.literal(this.props.y, factory.namedNode('http://www.w3.org/2001/XMLSchema#integer'))
+      }), 
+    }).then((result) => {
+      let things = []
+      result.bindingsStream.on('data', (binding) => {
+        things.push(binding.get('?thing').value);
+      });
+      result.bindingsStream.on('end', () => this.props.updateSelectedItems(things));
+    }).catch(console.error);
+  }
+
+  render() {
+    return (
+      <Layer>
+        <Rect
+          x={this.props.x * 30}
+          y={this.props.y * 30}
+          width={30}
+          height={30}
+          stroke='red'
+          strokeWidth={1.5}
+        />
+      </Layer>
+    )
+  }
+}
+
+class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      step: 0,
+      autoplay: false,
+      zoom: 0,
+      selection: {'x': 0, 'y': 0, 'items': []},
+    }
+    this.updateAutoplay = this.updateAutoplay.bind(this);
+    this.updateSelectedItems = this.updateSelectedItems.bind(this);
+    this.handleClick = this.handleClick.bind(this);
+    this.getZoomValue = this.getZoomValue.bind(this);
+  }
+
+  updateAutoplay() {
+    let newAuto = !this.state.autoplay;
+    this.setState({'autoplay': newAuto});
+    if(newAuto) {
+      this.autoplay = setInterval(
+        () => this.setState({'step': parseInt(this.state.step) + 1}),
+        500
+      );
+    } else {
+      clearInterval(this.autoplay);
+    }
+  }
+
+  updateSelectedItems(selectedItems) {
+    this.setState({'selection': {'x': this.state.selection.x, 'y': this.state.selection.y, 'items': selectedItems}});
+  }
+
+  handleClick(event) {
+    let x = Math.floor(event.evt.offsetX / (30 * this.getZoomValue()));
+    let y = Math.floor(event.evt.offsetY / (30 * this.getZoomValue()));
+    this.setState({'selection': {'x': x, 'y': y, 'items': []}});
+  }
+
+  getZoomValue() {
+    return Math.pow(1.1, this.state.zoom)
+  }
+
+  render() {
+    let playOrStop = this.state.autoplay ? 'Stop' : 'Play';
     return (
       <>
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
+            float: 'left',
+            width: '75%',
+            height: '99vh',
+            display: 'flex',
+            overflow: 'scroll',
           }}
         >
-          <SmartphoneConfigurator partList={this.state.partList} sendOrder={this.sendOrder}/>
-          <Stage width={1002} height={752} offsetX={-1} offsetY={-1} style={{margin: '50px'}}>
-            <Grid width={20} height={15} />
-            <Layer>
-              {stations}
-            </Layer>
-            <Layer>
-              {forklifts}
-            </Layer>
-            <Layer>
-              {products}
-            </Layer>
-          </Stage>
           <div>
-            <h2>Orders:</h2>
-            {orders}
+            <Stage width={Math.ceil(1502 * this.getZoomValue())} height={Math.ceil(1502 * this.getZoomValue())} offsetX={-1} offsetY={-1} style={{margin: '30px', maxWidth: '100%'}} scaleX={this.getZoomValue()} scaleY={this.getZoomValue()} onClick={this.handleClick}>
+              <Grid width={50} height={50} />
+              <Layer>
+                <Transporters step={this.state.step} />
+              </Layer>
+              <Layer>
+                <Products step={this.state.step} />
+              </Layer>
+              <Layer>
+                <Stations step={this.state.step} />
+                <Ports step={this.state.step} />
+              </Layer>
+              <Selection step={this.state.step} x={this.state.selection.x} y={this.state.selection.y} updateSelectedItems={this.updateSelectedItems} />
+            </Stage>
           </div>
         </div>
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "20pt"
+            float: 'left',
+            width: '25%',
           }}
         >
-          {this.state.hover}
+          <div
+            style={{
+              margin: '30px'
+            }}
+          >
+            <p>
+              <label htmlFor="zoom_input">Zoom:</label>
+            </p>
+            <input style={{width: '100px', marginRight: '20px'}} id="zoom_input" type="number" value={this.state.zoom} onChange={(event) => this.setState({'zoom': event.target.value})} />
+          </div>
+          <div
+            style={{
+              margin: "30px"
+            }}
+          >
+            <p>
+              <label htmlFor="step_input">Step:</label>
+            </p>
+            <input style={{width: '100px', marginRight: '20px'}} id="step_input" type="number" value={this.state.step} min={0} onChange={(event) => this.setState({'step': event.target.value})} />
+            <button style={{marginRight: '20px'}} onClick={this.updateAutoplay}>{playOrStop}</button>
+            <a target="_blank" rel="noopener noreferrer" href={`http://localhost:8000/modularSmartphone-${this.state.step}.trig`}>RDF</a>
+          </div>
+          <div
+            style={{
+              margin: "30px"
+            }}
+          >
+            <p>
+              <label>Selected Cell:</label>
+            </p>
+            <p>
+              {this.state.selection.x}, {this.state.selection.y}
+            </p>
+          </div>
+          <div
+            style={{
+              margin: "30px"
+            }}
+          >
+            <p>
+              <label htmlFor="step_input">Artifacts in Selected Cell:</label>
+            </p>
+            <SelectedItems selectedItems={this.state.selection.items} />
+          </div>
         </div>
       </>
     );
