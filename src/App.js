@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Group, Stage, Layer, Rect, Line, Circle, Text } from 'react-konva';
+import Konva from 'konva';
 import { Bindings } from '@comunica/bus-query-operation';
 import { DataFactory } from 'rdf-data-factory';
 const newEngine = require('@comunica/actor-init-sparql').newEngine;
@@ -61,7 +62,152 @@ class Port extends React.Component {
   }
 }
 
+
+class Gear extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      rotation: 0
+    }
+    this.anim = new Konva.Animation(frame => this.setState({
+      rotation: this.state.rotation + frame.timeDiff / 5
+    }))
+  }
+
+  componentDidUpdate(oldProps) {
+    if(oldProps.on !== this.props.on) {
+      if(this.props.on) {
+        this.anim.start();
+      } else {
+        this.anim.stop();
+      }
+    }
+  }
+
+  render() {
+    return (
+      <Group>
+        <Circle
+          x={this.props.x}
+          y={this.props.y}
+          radius={6}
+          fill='grey'
+          stroke='black'
+          strokeWidth={1.5}
+        />
+        <Rect
+          x={this.props.x}
+          y={this.props.y}
+          width={4}
+          height={5}
+          offsetX={2}
+          offsetY={-3}
+          rotation={this.state.rotation}
+          fill='grey'
+          stroke='black'
+          strokeWidth={1.5}
+        />
+        <Rect
+          x={this.props.x}
+          y={this.props.y}
+          width={4}
+          height={5}
+          offsetX={2}
+          offsetY={-3}
+          rotation={this.state.rotation + 60}
+          fill='grey'
+          stroke='black'
+          strokeWidth={1.5}
+        />
+        <Rect
+          x={this.props.x}
+          y={this.props.y}
+          width={4}
+          height={5}
+          offsetX={2}
+          offsetY={-3}
+          rotation={this.state.rotation + 120}
+          fill='grey'
+          stroke='black'
+          strokeWidth={1.5}
+        />
+        <Rect
+          x={this.props.x}
+          y={this.props.y}
+          width={4}
+          height={5}
+          offsetX={2}
+          offsetY={-3}
+          rotation={this.state.rotation + 180}
+          fill='grey'
+          stroke='black'
+          strokeWidth={1.5}
+        />
+        <Rect
+          x={this.props.x}
+          y={this.props.y}
+          width={4}
+          height={5}
+          offsetX={2}
+          offsetY={-3}
+          rotation={this.state.rotation + 240}
+          fill='grey'
+          stroke='black'
+          strokeWidth={1.5}
+        />
+        <Rect
+          x={this.props.x}
+          y={this.props.y}
+          width={4}
+          height={5}
+          offsetX={2}
+          offsetY={-3}
+          rotation={this.state.rotation + 300}
+          fill='grey'
+          stroke='black'
+          strokeWidth={1.5}
+        />
+        <Circle
+          x={this.props.x}
+          y={this.props.y}
+          radius={5}
+          fill='grey'
+        />
+        <Circle
+          x={this.props.x}
+          y={this.props.y}
+          radius={2}
+          fill={this.props.background}
+          stroke='black'
+          strokeWidth={1.5}
+        />
+      </Group>
+    );
+  }
+}
+
 class Station extends React.Component {
+  colorMap = {
+    'memoryStorage': '#4680b9',
+    'cpuStorage': '#0080ff',
+    'boardStorage': '#4040bf',
+    'soldering': '#0000ff',
+    'fixing': '#00ffff',
+    'portStorage': '#4db3b3',
+    'metalStorage': '#bfbf40',
+    'metalCasting': '#ffff00',
+    'plasticStorage': '#bf9f40',
+    'plasticCasting': '#ffbf00',
+    'bolting': '#46b946',
+    'communicationStorage': '#4000ff',
+    'sensorStorage': '#8000ff',
+    'batteryCellStorage': '#b34db3',
+    'combining': '#ff00ff',
+    'gluing': '#ff0000',
+    'delivery': '#ff9999',
+    'glasStorage': '#cc3333',
+    'lcdStorage': '#990000',
+  }
   render() {
     return (
       <Group>
@@ -70,10 +216,18 @@ class Station extends React.Component {
           y={this.props.y1 * 30}
           width={(this.props.x2 - this.props.x1 + 1) * 30}
           height={(this.props.y2 - this.props.y1 + 1) * 30}
-          fill='blue'
+          fill={this.colorMap[this.props.skill]}
           stroke='black'
           strokeWidth={1.5}
         />
+        <Text
+          x={this.props.x1 * 30 + 5}
+          y={this.props.y1 * 30 + 5}
+          width={50}
+          text={this.props.skill}
+          wrap='char'
+        />
+        <Gear x={this.props.x1 * 30 + 45} y={this.props.y1 * 30 + 45} on={this.props.running} background={this.colorMap[this.props.skill]}/>
       </Group>
     )
   }
@@ -357,6 +511,8 @@ class Stations extends Component {
       WHERE {
         GRAPH ?station {
           ?station a arena:Workstation ;
+            arena:skills ?skill ;
+            arena:status ?status ;
             arena:locationX1 ?locationX1 ;
             arena:locationY1 ?locationY1 ;
             arena:locationX2 ?locationX2 ;
@@ -370,6 +526,8 @@ class Stations extends Component {
       result.bindingsStream.on('data', (binding) => {
         stations.push({
           'id': binding.get('?station').value,
+          'skill': binding.get('?skill').value,
+          'running': binding.get('?status').value === 'http://arena2036.example.org/busy' ? true : false,
           'x1': binding.get('?locationX1').value,
           'y1': binding.get('?locationY1').value,
           'x2': binding.get('?locationX2').value,
@@ -381,7 +539,16 @@ class Stations extends Component {
   }
 
   render() {
-    let stations = this.state.stations.map((t) => <Station key={t.id} id={t.id} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}/>)
+    let stations = this.state.stations.map((t) => <Station
+      key={t.id}
+      id={t.id}
+      skill={t.skill.substring(t.skill.lastIndexOf('/') + 1)}
+      running={t.running}
+      x1={t.x1}
+      y1={t.y1}
+      x2={t.x2}
+      y2={t.y2}
+    />)
     return (
       <>
         {stations}
@@ -545,11 +712,39 @@ class App extends Component {
       autoplay: false,
       zoom: 0,
       selection: {'x': 0, 'y': 0, 'items': []},
+      gridWidth: 0,
+      gridHeight: 0,
     }
     this.updateAutoplay = this.updateAutoplay.bind(this);
     this.updateSelectedItems = this.updateSelectedItems.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.getZoomValue = this.getZoomValue.bind(this);
+  }
+
+  componentDidMount() {
+    // Get grid size via Comunica
+    myEngine.query(`
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX arena: <http://arena2036.example.org/>
+      PREFIX sim: <http://ti.rw.fau.de/sim#>
+
+      SELECT *
+      WHERE {
+        GRAPH ?shopfloor {
+          ?shopfloor a arena:Shopfloor ;
+            arena:sizeX ?width ;
+            arena:sizeY ?height .
+        }
+      } 
+      `, {
+      sources: [`http://localhost:8000/modularSmartphone-${this.state.step}.trig`],
+    }).then((result) => {
+      result.bindingsStream.on('data', (binding) => this.setState({
+        'gridWidth': parseInt(binding.get('?width').value),
+        'gridHeight': parseInt(binding.get('?height').value)
+      }));
+    }).catch(console.error);
   }
 
   updateAutoplay() {
@@ -572,7 +767,9 @@ class App extends Component {
   handleClick(event) {
     let x = Math.floor(event.evt.offsetX / (30 * this.getZoomValue()));
     let y = Math.floor(event.evt.offsetY / (30 * this.getZoomValue()));
-    this.setState({'selection': {'x': x, 'y': y, 'items': []}});
+    if(x < this.state.gridWidth && y < this.state.gridHeight) {
+      this.setState({'selection': {'x': x, 'y': y, 'items': []}});
+    }
   }
 
   getZoomValue() {
@@ -594,7 +791,7 @@ class App extends Component {
         >
           <div>
             <Stage width={Math.ceil(1502 * this.getZoomValue())} height={Math.ceil(1502 * this.getZoomValue())} offsetX={-1} offsetY={-1} style={{margin: '30px', maxWidth: '100%'}} scaleX={this.getZoomValue()} scaleY={this.getZoomValue()} onClick={this.handleClick}>
-              <Grid width={50} height={50} />
+              <Grid width={this.state.gridWidth} height={this.state.gridHeight} />
               <Layer>
                 <Transporters step={this.state.step} />
               </Layer>
